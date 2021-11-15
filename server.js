@@ -32,6 +32,39 @@ app.get("/", (req, res) => {
   })
 });
 
+app.get("/user", (req, res) => {
+  const { userName, email } = req.body;
+  const queryString = `SELECT * FROM user WHERE username = "${userName}" OR email = "${email}"`;
+
+  connection.query(queryString, (err, result, fields) => {
+    if (err) throw err;
+
+    res.send(result);
+  });
+});
+
+app.get("/sight-words", (req, res) => {
+  const { userId } = req.body;
+  const queryString = `SELECT * FROM words WHERE user_id = ${userId} AND NOT complete`;
+
+  connection.query(queryString, (err, result, fields) => {
+    if (err) throw err;
+
+    res.send(result);
+  });
+});
+
+app.get("/phrases", (req, res) => {
+  const { userId } = req.body;
+  const queryString = `SELECT * FROM phrases WHERE user_id = ${userId} AND NOT complete`;
+
+  connection.query(queryString, (err, result, fields) => {
+    if (err) throw err;
+
+    res.send(result);
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`App listening on port: ${PORT}`);
-})
+});
