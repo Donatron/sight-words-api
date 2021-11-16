@@ -34,8 +34,7 @@ const handleUpdateSightWord = (req, res, conn) => {
     AND user_id = ${userId}`;
 
   conn.query(queryString, (err, result, fields) => {
-    // if (err) throw err;
-    if (err) res.send(err);
+    if (err) throw err;
 
     res.send(result);
   })
