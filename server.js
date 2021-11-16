@@ -2,12 +2,16 @@ const express = require('express');
 const mysql = require('mysql');
 const app = express();
 
+const sightwords = require('./controllers/sightwords');
+const phrases = require('./controllers/phrases');
+const user = require('./controllers/user');
+
 const PORT = process.env.PORT || 5000;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-var connection = mysql.createConnection({
+var conn = mysql.createConnection({
   host: 'localhost',
   port: "8889",
   user: 'root',
@@ -15,55 +19,26 @@ var connection = mysql.createConnection({
   database: 'sight_words'
 });
 
-connection.connect(function (err) {
+conn.connect(function (err) {
   if (err) {
     console.error('error connecting: ' + err.stack);
     return;
   }
 
-  console.log('connected as id ' + connection.threadId);
+  console.log('connected as id ' + conn.threadId);
 });
 
 app.get("/", (req, res) => {
-  connection.query('SELECT * FROM user', (err, result, fields) => {
-    if (err) throw err;
-
-    res.send(result);
-  })
+  res.send('Connected');
 });
 
-app.get("/user", (req, res) => {
-  const { userName, email } = req.body;
-  const queryString = `SELECT * FROM user WHERE username = "${userName}" OR email = "${email}"`;
-
-  connection.query(queryString, (err, result, fields) => {
-    if (err) throw err;
-
-    res.send(result);
-  });
-});
-
-app.get("/sight-words", (req, res) => {
-  const { userId } = req.body;
-  const queryString = `SELECT * FROM words WHERE user_id = ${userId} AND NOT complete`;
-
-  connection.query(queryString, (err, result, fields) => {
-    if (err) throw err;
-
-    res.send(result);
-  });
-});
-
-app.get("/phrases", (req, res) => {
-  const { userId } = req.body;
-  const queryString = `SELECT * FROM phrases WHERE user_id = ${userId} AND NOT complete`;
-
-  connection.query(queryString, (err, result, fields) => {
-    if (err) throw err;
-
-    res.send(result);
-  });
-});
+app.get("/sight-words", (req, res) => sightwords.handleFetchSightWords(req, res, conn));
+app.get("/sight-words-insert", (req, res) => sightwords.handleInsertSightWord(req, res, conn));
+app.get("/sight-words-update", (req, res) => sightwords.handleUpdateSightWord(req, res, conn));
+app.get("/phrases", (req, res) => phrases.handleFetchPhrases(req, res, conn));
+app.get("/phrases-insert", (req, res) => phrases.handleInsertPhrase(req, res, conn));
+app.get("/phrases-update", (req, res) => phrases.handleUpdatePhrase(req, res, conn));
+app.get("/user", (req, res) => user.handleFetchUser(req, res, conn));
 
 app.listen(PORT, () => {
   console.log(`App listening on port: ${PORT}`);
