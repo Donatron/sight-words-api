@@ -37,13 +37,14 @@ app.get("/", (req, res) => {
 });
 
 app.get("/sight-words", (req, res) => sightwordsController.handleFetchSightWords(req, res, conn));
-app.get("/sight-words-insert", (req, res) => sightwordsController.handleInsertSightWord(req, res, conn));
-app.get("/sight-words-update", (req, res) => sightwordsController.handleUpdateSightWord(req, res, conn));
+app.post("/sight-words-insert", (req, res) => sightwordsController.handleInsertSightWord(req, res, conn));
+app.put("/sight-words-update", (req, res) => sightwordsController.handleUpdateSightWord(req, res, conn));
 app.get("/phrases", (req, res) => phrasesController.handleFetchPhrases(req, res, conn));
-app.get("/phrases-insert", (req, res) => phrasesController.handleInsertPhrase(req, res, conn));
-app.get("/phrases-update", (req, res) => phrasesController.handleUpdatePhrase(req, res, conn));
+app.post("/phrases-insert", (req, res) => phrasesController.handleInsertPhrase(req, res, conn));
+app.put("/phrases-update", (req, res) => phrasesController.handleUpdatePhrase(req, res, conn));
 app.get("/user", (req, res) => userController.handleFetchUser(req, res, conn));
-app.get("/login", (req, res) => authController.handleLogin(req, res, conn));
+app.post("/login", (req, res) => authController.handleLogin(req, res, conn));
+app.post("/register", (req, res) => authController.handleRegister(req, res, conn));
 
 app.listen(PORT, () => {
   console.log(`App listening on port: ${PORT}`);
