@@ -1,10 +1,15 @@
 const express = require('express');
 const mysql = require('mysql');
+const dotenv = require('dotenv');
+const authMiddleware = require('./middleware/auth');
+
+dotenv.config({ path: './config.env' });
 const app = express();
 
-const sightwords = require('./controllers/sightwords');
-const phrases = require('./controllers/phrases');
-const user = require('./controllers/user');
+const authController = require('./controllers/auth');
+const sightwordsController = require('./controllers/sightwords');
+const phrasesController = require('./controllers/phrases');
+const userController = require('./controllers/user');
 
 const PORT = process.env.PORT || 5000;
 
@@ -12,11 +17,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 var conn = mysql.createConnection({
-  host: 'localhost',
-  port: "8889",
-  user: 'root',
-  password: 'root',
-  database: 'sight_words'
+  host: process.env.HOST,
+  port: process.env.DATABASE_PORT,
+  user: process.env.DATABASE_USER,
+  password: process.env.DATABASE_PASSWORD,
+  database: process.env.DATABASE
 });
 
 conn.connect(function (err) {
@@ -32,13 +37,15 @@ app.get("/", (req, res) => {
   res.send('Connected');
 });
 
-app.get("/sight-words", (req, res) => sightwords.handleFetchSightWords(req, res, conn));
-app.get("/sight-words-insert", (req, res) => sightwords.handleInsertSightWord(req, res, conn));
-app.get("/sight-words-update", (req, res) => sightwords.handleUpdateSightWord(req, res, conn));
-app.get("/phrases", (req, res) => phrases.handleFetchPhrases(req, res, conn));
-app.get("/phrases-insert", (req, res) => phrases.handleInsertPhrase(req, res, conn));
-app.get("/phrases-update", (req, res) => phrases.handleUpdatePhrase(req, res, conn));
-app.get("/user", (req, res) => user.handleFetchUser(req, res, conn));
+app.get("/sight-words", authMiddleware, (req, res) => sightwordsController.handleFetchSightWords(req, res, conn));
+app.post("/sight-words-insert", authMiddleware, (req, res) => sightwordsController.handleInsertSightWord(req, res, conn));
+app.put("/sight-words-update", authMiddleware, (req, res) => sightwordsController.handleUpdateSightWord(req, res, conn));
+app.get("/phrases", authMiddleware, (req, res) => phrasesController.handleFetchPhrases(req, res, conn));
+app.post("/phrases-insert", authMiddleware, (req, res) => phrasesController.handleInsertPhrase(req, res, conn));
+app.put("/phrases-update", authMiddleware, (req, res) => phrasesController.handleUpdatePhrase(req, res, conn));
+app.get("/user", authMiddleware, (req, res) => userController.handleFetchUser(req, res, conn));
+app.post("/login", (req, res) => authController.handleLogin(req, res, conn));
+app.post("/register", (req, res) => authController.handleRegister(req, res, conn));
 
 app.listen(PORT, () => {
   console.log(`App listening on port: ${PORT}`);

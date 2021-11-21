@@ -1,42 +1,50 @@
 const handleFetchSightWords = (req, res, conn) => {
-  const { userId } = req.body;
   const queryString = `SELECT * FROM words 
-    WHERE user_id = ${userId} 
+    WHERE user_id = ${req.user.id} 
     AND NOT complete`;
 
   conn.query(queryString, (err, result, fields) => {
     if (err) throw err;
 
-    res.send(result);
+    res.json({
+      status: 'success',
+      result
+    });
   });
 }
 
 const handleInsertSightWord = (req, res, conn) => {
-  const { userId, word, syllables } = req.body;
+  const { word, syllables } = req.body;
   const queryString = `INSERT INTO words 
     (user_id, value, syllables) 
-    VALUES("${userId}","${word}","${syllables}")`;
+    VALUES("${req.user.id}","${word}","${syllables}")`;
 
   conn.query(queryString, (err, result, fields) => {
     if (err) throw err;
 
-    res.send(result);
+    res.json({
+      status: 'success',
+      result
+    });
   });
 }
 
 const handleUpdateSightWord = (req, res, conn) => {
-  const { id, userId, word, syllables, complete } = req.body;
+  const { id, word, syllables, complete } = req.body;
   const queryString = `UPDATE words SET 
     value="${word}", 
     syllables="${syllables}", 
     complete="${complete}" 
     WHERE id ="${id}" 
-    AND user_id = ${userId}`;
+    AND user_id = ${req.user.id}`;
 
   conn.query(queryString, (err, result, fields) => {
     if (err) throw err;
 
-    res.send(result);
+    res.json({
+      status: 'success',
+      result
+    });
   })
 }
 
