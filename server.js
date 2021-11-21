@@ -1,6 +1,7 @@
 const express = require('express');
 const mysql = require('mysql');
 const dotenv = require('dotenv');
+const authMiddleware = require('./middleware/auth');
 
 dotenv.config({ path: './config.env' });
 const app = express();
@@ -36,13 +37,13 @@ app.get("/", (req, res) => {
   res.send('Connected');
 });
 
-app.get("/sight-words", (req, res) => sightwordsController.handleFetchSightWords(req, res, conn));
-app.post("/sight-words-insert", (req, res) => sightwordsController.handleInsertSightWord(req, res, conn));
-app.put("/sight-words-update", (req, res) => sightwordsController.handleUpdateSightWord(req, res, conn));
-app.get("/phrases", (req, res) => phrasesController.handleFetchPhrases(req, res, conn));
-app.post("/phrases-insert", (req, res) => phrasesController.handleInsertPhrase(req, res, conn));
-app.put("/phrases-update", (req, res) => phrasesController.handleUpdatePhrase(req, res, conn));
-app.get("/user", (req, res) => userController.handleFetchUser(req, res, conn));
+app.get("/sight-words", authMiddleware, (req, res) => sightwordsController.handleFetchSightWords(req, res, conn));
+app.post("/sight-words-insert", authMiddleware, (req, res) => sightwordsController.handleInsertSightWord(req, res, conn));
+app.put("/sight-words-update", authMiddleware, (req, res) => sightwordsController.handleUpdateSightWord(req, res, conn));
+app.get("/phrases", authMiddleware, (req, res) => phrasesController.handleFetchPhrases(req, res, conn));
+app.post("/phrases-insert", authMiddleware, (req, res) => phrasesController.handleInsertPhrase(req, res, conn));
+app.put("/phrases-update", authMiddleware, (req, res) => phrasesController.handleUpdatePhrase(req, res, conn));
+app.get("/user", authMiddleware, (req, res) => userController.handleFetchUser(req, res, conn));
 app.post("/login", (req, res) => authController.handleLogin(req, res, conn));
 app.post("/register", (req, res) => authController.handleRegister(req, res, conn));
 

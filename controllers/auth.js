@@ -3,18 +3,59 @@ const jwt = require('jsonwebtoken');
 const validator = require('validator');
 
 const handleLogin = (req, res, conn) => {
-  const { userName, password } = req.body;
-  if (!userName || !password) res.status(400).json('Wrong username or password');
+  const { email, password } = req.body;
+  if (!email || !password) res.status(400).json('Wrong signin credentials.');
 
   let user;
 
-  conn.query(`SELECT * FROM user
-    WHERE username="${userName}" OR email="${userName}"`, (err, result, fields) => {
+  conn.query(`SELECT * FROM login
+    WHERE email="${email}"`, async (err, result, fields) => {
     if (err) throw err;
-    user = result;
+    user = result[0];
 
-    if (password !== user[0].password) res.status(400).json('Wrong username or password');
-    res.send('Login Success');
+    if (user) {
+      try {
+        await bcrypt.compare(password, user.hash, (err, response) => {
+          if (err) throw err;
+
+          if (response) {
+            const payload = {
+              user: {
+                id: user.user_id
+              }
+            }
+
+            jwt.sign(
+              payload,
+              process.env.JWT_SECRET,
+              {
+                expiresIn: '1 day'
+              },
+              (err, token) => {
+                if (err) throw err;
+
+                res.json({ token })
+              }
+            );
+          } else {
+            res.json({
+              status: 'error',
+              message: 'Incorrect password'
+            });
+          }
+        })
+      } catch (err) {
+        res.json({
+          status: 'error',
+          message: 'Unable to process login at the moment'
+        })
+      }
+    } else {
+      res.json({
+        status: 'error',
+        message: 'User not found'
+      });
+    }
   });
 }
 
@@ -26,33 +67,32 @@ const handleRegister = (req, res, conn) => {
 
   if (!isValidEmail || !isValidUserName) {
     res.status(400).json({
+      status: 'error',
       message: 'Please enter a valid email, and a user name between 3 and 20 characters'
     })
   }
 
-
   const userQuery = `INSERT INTO user(email, username) values("${email}","${userName}")`;
 
-  // Check for username, email
   conn.query(userQuery, async (err, result, fields) => {
     if (err && err.code === 'ER_DUP_ENTRY') res.status(400).json({ message: "User name or email already in use" });
     if (err) throw err;
 
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
+    const registeredUserId = result.insertId;
 
-    const loginQuery = `INSERT INTO login(email, hash) VALUES ("${email}","${hash}")`;
+    const loginQuery = `INSERT INTO login(user_id, email, hash) VALUES ("${registeredUserId}","${email}","${hash}")`;
 
     conn.query(loginQuery, (err, result, fields) => {
       if (err) throw (err);
-
 
       conn.query(`SELECT id FROM user WHERE email = "${email}"`, (err, result, fields) => {
         if (err) throw err;
 
         const payload = {
           user: {
-            id: result[0].id
+            id: registeredUserId
           }
         }
 
@@ -60,7 +100,7 @@ const handleRegister = (req, res, conn) => {
           payload,
           process.env.JWT_SECRET,
           {
-            expiresIn: 36000
+            expiresIn: '1 day'
           },
           (err, token) => {
             if (err) throw err;
