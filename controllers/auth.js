@@ -34,7 +34,7 @@ const handleLogin = (req, res, conn) => {
               (err, token) => {
                 if (err) throw err;
 
-                res.json({ token })
+                res.json({ status: 'success', token })
               }
             );
           } else {

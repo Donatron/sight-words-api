@@ -2,6 +2,7 @@ const express = require('express');
 const mysql = require('mysql');
 const dotenv = require('dotenv');
 const authMiddleware = require('./middleware/auth');
+const cors = require('cors');
 
 dotenv.config({ path: './config.env' });
 const app = express();
@@ -15,6 +16,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cors());
 
 var conn = mysql.createConnection({
   host: process.env.HOST,
