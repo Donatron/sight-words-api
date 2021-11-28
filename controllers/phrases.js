@@ -3,7 +3,10 @@ const handleFetchPhrases = (req, res, conn) => {
     WHERE user_id = ${req.user.id}`;
 
   conn.query(queryString, (err, result, fields) => {
-    if (err) throw err;
+    if (err) res.json({
+      status: 'error',
+      message: 'Unable to fetch phrases at the moment. Please try later'
+    });
 
     res.json({
       status: 'success',
@@ -20,7 +23,10 @@ const handleInsertPhrase = (req, res, conn) => {
     VALUES("${phrase}","${req.user.id}")`;
 
   conn.query(queryString, (err, result, fields) => {
-    if (err) throw err;
+    if (err) res.json({
+      status: 'error',
+      message: 'Unable to add new phrase at the moment. Please try again later'
+    })
 
     res.json({
       status: 'success',
@@ -42,7 +48,10 @@ const handleUpdatePhrase = (req, res, conn) => {
   queryString += ` WHERE id = ${phraseId} AND user_id = ${req.user.id}`;
 
   conn.query(queryString, (err, result, fields) => {
-    if (err) throw err;
+    if (err) res.json({
+      status: 'error',
+      message: 'Unable to update phrase at the moment. Please try again later'
+    })
 
     res.json({
       status: 'success',
@@ -57,7 +66,10 @@ const handleDeletePhrase = (req, res, conn) => {
     id = ${phraseId} AND user_id = ${req.user.id}`;
 
   conn.query(queryString, (err, result, fields) => {
-    if (err) throw err;
+    if (err) res.json({
+      status: 'error',
+      message: 'Unable to delete phrase at the moment. Please try again later'
+    });
 
     if (result.affectedRows === 0) {
       res.json({

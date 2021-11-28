@@ -10,7 +10,10 @@ const handleLogin = (req, res, conn) => {
 
   conn.query(`SELECT * FROM login
     WHERE email="${email}"`, async (err, result, fields) => {
-    if (err) throw err;
+    if (err) res.json({
+      status: 'error',
+      message: 'Unable to login at the moment. Please try again later'
+    })
     user = result[0];
 
     if (user) {
@@ -76,7 +79,10 @@ const handleRegister = (req, res, conn) => {
 
   conn.query(userQuery, async (err, result, fields) => {
     if (err && err.code === 'ER_DUP_ENTRY') res.status(400).json({ message: "User name or email already in use" });
-    if (err) throw err;
+    if (err) res.json({
+      status: 'error',
+      message: 'Unable to load user information at the moment. Please try again'
+    });
 
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
@@ -85,7 +91,10 @@ const handleRegister = (req, res, conn) => {
     const loginQuery = `INSERT INTO login(user_id, email, hash) VALUES ("${registeredUserId}","${email}","${hash}")`;
 
     conn.query(loginQuery, (err, result, fields) => {
-      if (err) throw (err);
+      if (err) res.json({
+        status: 'error',
+        message: 'Error processing user registration. Please try again later'
+      });
 
       conn.query(`SELECT id FROM user WHERE email = "${email}"`, (err, result, fields) => {
         if (err) throw err;
@@ -103,9 +112,15 @@ const handleRegister = (req, res, conn) => {
             expiresIn: '1 day'
           },
           (err, token) => {
-            if (err) throw err;
+            if (err) res, json({
+              status: 'error',
+              message: 'Unable to authenticate new user. Please try later'
+            })
 
-            res.json({ token })
+            res.json({
+              state: 'success',
+              token
+            });
           }
         )
       })

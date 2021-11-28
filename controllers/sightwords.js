@@ -3,7 +3,10 @@ const handleFetchSightWords = (req, res, conn) => {
     WHERE user_id = ${req.user.id}`;
 
   conn.query(queryString, (err, result, fields) => {
-    if (err) throw err;
+    if (err) res.json({
+      status: 'error',
+      message: 'Unable to fetch sight words at the moment. Please try again later'
+    });
 
     res.json({
       status: 'success',
@@ -19,7 +22,10 @@ const handleInsertSightWord = (req, res, conn) => {
     VALUES("${req.user.id}","${word}","${syllables}")`;
 
   conn.query(queryString, (err, result, fields) => {
-    if (err) throw err;
+    if (err) res.json({
+      status: 'error',
+      message: 'Unable to add new sight word at the moment. Please try again later'
+    });
 
     res.json({
       status: 'success',
@@ -43,7 +49,10 @@ const handleUpdateSightWord = (req, res, conn) => {
   queryString += ` WHERE id = ${wordId} AND user_id = ${req.user.id}`;
 
   conn.query(queryString, (err, result, fields) => {
-    if (err) throw err;
+    if (err) res.json({
+      status: 'error',
+      message: 'Unable to update sight word at the moment. Please try again later'
+    });
 
     res.json({
       status: 'success',
@@ -58,7 +67,10 @@ const handleDeleteSightWord = (req, res, conn) => {
     id = ${wordId} AND user_id = ${req.user.id}`;
 
   conn.query(queryString, (err, result, fields) => {
-    if (err) throw err;
+    if (err) res.json({
+      status: 'error',
+      message: 'Unable to delete sight word at the moment. Please try again later'
+    });
 
     if (result.affectedRows === 0) {
       res.json({
