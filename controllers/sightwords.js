@@ -1,7 +1,6 @@
 const handleFetchSightWords = (req, res, conn) => {
   const queryString = `SELECT * FROM words 
-    WHERE user_id = ${req.user.id} 
-    AND NOT complete`;
+    WHERE user_id = ${req.user.id}`;
 
   conn.query(queryString, (err, result, fields) => {
     if (err) throw err;
@@ -30,13 +29,18 @@ const handleInsertSightWord = (req, res, conn) => {
 }
 
 const handleUpdateSightWord = (req, res, conn) => {
-  const { id, word, syllables, complete } = req.body;
-  const queryString = `UPDATE words SET 
-    value="${word}", 
-    syllables="${syllables}", 
-    complete="${complete}" 
-    WHERE id ="${id}" 
-    AND user_id = ${req.user.id}`;
+  const { word, syllables, complete } = req.body;
+  const { wordId } = req.params
+
+  let queryString = 'UPDATE words SET ';
+
+  if (req.body.word) queryString += `value = "${word}"`;
+  if (req.body.word && req.body.syllables) queryString += ', ';
+  if (req.body.syllables) queryString += `syllables = "${syllables}"`;
+  if (req.body.word || req.body.syllables && req.body.complete) queryString += ', ';
+  if (req.body.complete) queryString += `complete = "${complete}"`;
+
+  queryString += ` WHERE id = ${wordId} AND user_id = ${req.user.id}`;
 
   conn.query(queryString, (err, result, fields) => {
     if (err) throw err;
@@ -48,8 +52,30 @@ const handleUpdateSightWord = (req, res, conn) => {
   })
 }
 
+const handleDeleteSightWord = (req, res, conn) => {
+  const { wordId } = req.params;
+  const queryString = `DELETE FROM words WHERE
+    id = ${wordId} AND user_id = ${req.user.id}`;
+
+  conn.query(queryString, (err, result, fields) => {
+    if (err) throw err;
+
+    if (result.affectedRows === 0) {
+      res.json({
+        status: 'error',
+        message: 'Unable to delete word.'
+      })
+    } else {
+      res.json({
+        status: 'success'
+      });
+    }
+  });
+}
+
 module.exports = {
   handleFetchSightWords,
   handleInsertSightWord,
-  handleUpdateSightWord
+  handleUpdateSightWord,
+  handleDeleteSightWord
 }

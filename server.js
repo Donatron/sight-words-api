@@ -39,12 +39,19 @@ app.get("/", (req, res) => {
   res.send('Connected');
 });
 
+// Sight Word routes
 app.get("/sight-words", authMiddleware, (req, res) => sightwordsController.handleFetchSightWords(req, res, conn));
 app.post("/sight-words-insert", authMiddleware, (req, res) => sightwordsController.handleInsertSightWord(req, res, conn));
-app.put("/sight-words-update", authMiddleware, (req, res) => sightwordsController.handleUpdateSightWord(req, res, conn));
+app.put("/sight-words-update/:wordId", authMiddleware, (req, res) => sightwordsController.handleUpdateSightWord(req, res, conn));
+app.delete("/sight-words-delete/:wordId", authMiddleware, (req, res) => sightwordsController.handleDeleteSightWord(req, res, conn));
+
+// Phrase routes
 app.get("/phrases", authMiddleware, (req, res) => phrasesController.handleFetchPhrases(req, res, conn));
 app.post("/phrases-insert", authMiddleware, (req, res) => phrasesController.handleInsertPhrase(req, res, conn));
-app.put("/phrases-update", authMiddleware, (req, res) => phrasesController.handleUpdatePhrase(req, res, conn));
+app.put("/phrases-update/:phraseId", authMiddleware, (req, res) => phrasesController.handleUpdatePhrase(req, res, conn));
+app.delete("/phrases-delete/:phraseId", authMiddleware, (req, res) => phrasesController.handleDeletePhrase(req, res, conn));
+
+// User / Auth routes
 app.get("/user", authMiddleware, (req, res) => userController.handleFetchUser(req, res, conn));
 app.post("/login", (req, res) => authController.handleLogin(req, res, conn));
 app.post("/register", (req, res) => authController.handleRegister(req, res, conn));

@@ -1,7 +1,6 @@
 const handleFetchPhrases = (req, res, conn) => {
   const queryString = `SELECT * FROM phrases 
-    WHERE user_id = ${req.user.id} 
-    AND NOT complete`;
+    WHERE user_id = ${req.user.id}`;
 
   conn.query(queryString, (err, result, fields) => {
     if (err) throw err;
@@ -15,6 +14,7 @@ const handleFetchPhrases = (req, res, conn) => {
 
 const handleInsertPhrase = (req, res, conn) => {
   const { phrase } = req.body;
+
   const queryString = `INSERT INTO phrases 
     (value, user_id) 
     VALUES("${phrase}","${req.user.id}")`;
@@ -30,12 +30,16 @@ const handleInsertPhrase = (req, res, conn) => {
 }
 
 const handleUpdatePhrase = (req, res, conn) => {
-  const { id, phrase, complete } = req.body;
-  const queryString = `UPDATE phrases SET 
-    value="${phrase}", 
-    complete="${complete}" 
-    WHERE id ="${id}" 
-    AND user_id = ${req.user.id}`;
+  const { phrase, complete } = req.body;
+  const { phraseId } = req.params;
+
+  let queryString = 'UPDATE phrases SET ';
+
+  if (req.body.phrase) queryString += `value = "${phrase}"`;
+  if (req.body.phrase && req.body.complete) queryString += ', ';
+  if (req.body.complete) queryString += `complete = "${complete}"`;
+
+  queryString += ` WHERE id = ${phraseId} AND user_id = ${req.user.id}`;
 
   conn.query(queryString, (err, result, fields) => {
     if (err) throw err;
@@ -47,8 +51,30 @@ const handleUpdatePhrase = (req, res, conn) => {
   });
 }
 
+const handleDeletePhrase = (req, res, conn) => {
+  const { phraseId } = req.params;
+  const queryString = `DELETE FROM phrases WHERE
+    id = ${phraseId} AND user_id = ${req.user.id}`;
+
+  conn.query(queryString, (err, result, fields) => {
+    if (err) throw err;
+
+    if (result.affectedRows === 0) {
+      res.json({
+        status: 'error',
+        message: 'Unable to delete phrase.'
+      })
+    } else {
+      res.json({
+        status: 'success'
+      });
+    }
+  });
+}
+
 module.exports = {
   handleFetchPhrases,
   handleInsertPhrase,
-  handleUpdatePhrase
+  handleUpdatePhrase,
+  handleDeletePhrase
 }
