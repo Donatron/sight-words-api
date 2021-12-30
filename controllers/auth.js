@@ -63,15 +63,22 @@ const handleLogin = (req, res, conn) => {
 }
 
 const handleRegister = (req, res, conn) => {
-  const { userName, email, password } = req.body;
+  const { userName, email, password, passwordConfirm } = req.body;
 
   const isValidEmail = validator.isEmail(email);
   const isValidUserName = validator.isLength(userName, { min: 3, max: 20 });
 
   if (!isValidEmail || !isValidUserName) {
-    res.status(400).json({
+    return res.status(400).json({
       status: 'error',
       message: 'Please enter a valid email, and a user name between 3 and 20 characters'
+    })
+  }
+
+  if (password !== passwordConfirm) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Password and confirmation password do not match'
     })
   }
 
