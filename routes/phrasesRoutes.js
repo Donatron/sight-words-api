@@ -5,7 +5,9 @@ const router = express.Router();
 
 router.route('/')
   .get(phrasesController.getAllPhrases)
-  .post(phrasesController.createPhrase)
+  .post(phrasesController.createPhrase);
+
+router.route('/:id')
   .patch(phrasesController.updatePhrase)
   .delete(phrasesController.deletePhrase);
 
