@@ -1,6 +1,8 @@
 const SightWord = require('../models/sightWordModel');
 
 exports.getAllSightWords = async (req, res) => {
+  console.log(req.headers);
+
   try {
     const sightWords = await SightWord.find();
 
