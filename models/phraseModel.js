@@ -13,6 +13,6 @@ const phraseSchema = new mongoose.Schema({
   }
 });
 
-const Phrase = mongoose.model('phrase', phraseSchema);
+const Phrase = mongoose.model('Phrase', phraseSchema);
 
 module.exports = Phrase;
