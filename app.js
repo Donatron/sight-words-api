@@ -15,4 +15,11 @@ app.use('/sight-words', sightWordsRouter);
 app.use('/phrases', phrasesRouter);
 app.use('/users', userRouter);
 
+app.all('/*', (req, res) => {
+  res.status(404).json({
+    status: 'fail',
+    message: 'Unable to find that resource on this server!'
+  });
+});
+
 module.exports = app;

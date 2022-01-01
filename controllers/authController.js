@@ -15,11 +15,11 @@ exports.signup = async (req, res) => {
   try {
     const user = await User.create(req.body);
 
+    const token = await signToken(user._id);
+
     res.status(200).json({
       status: 'success',
-      data: {
-        user
-      }
+      token
     });
   } catch (err) {
     res.status(400).json({
