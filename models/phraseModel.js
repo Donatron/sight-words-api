@@ -10,7 +10,22 @@ const phraseSchema = new mongoose.Schema({
   complete: {
     type: Boolean,
     default: false
+  },
+  user: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: [true, 'You must be a logged in user to add a phrase']
   }
+});
+
+phraseSchema.index({ user: 1 });
+
+phraseSchema.pre('find', function (next) {
+  this.populate({
+    path: 'user',
+    select: 'userName'
+  })
+  next();
 });
 
 const Phrase = mongoose.model('Phrase', phraseSchema);

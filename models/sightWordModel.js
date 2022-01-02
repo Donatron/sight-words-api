@@ -19,6 +19,8 @@ const sightWordSchema = new mongoose.Schema({
   }
 });
 
+sightWordSchema.index({ user: 1 });
+
 sightWordSchema.pre('find', function (next) {
   this.populate({
     path: 'user',
