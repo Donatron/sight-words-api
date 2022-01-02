@@ -1,4 +1,7 @@
 const jwt = require('jsonwebtoken');
+const { promisify } = require('util');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
 const User = require('../models/userModel');
 
 const signToken = async (id) => {
@@ -11,59 +14,61 @@ const signToken = async (id) => {
   );
 }
 
-exports.signup = async (req, res) => {
-  try {
-    const user = await User.create(req.body);
+exports.signup = catchAsync(async (req, res, next) => {
+  const { name, userName, email, password, passwordConfirm } = req.body;
 
-    const token = await signToken(user._id);
+  const newUser = await User.create({
+    name,
+    userName,
+    email,
+    password,
+    passwordConfirm
+  });
 
-    res.status(200).json({
-      status: 'success',
-      token
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: 'fail',
-      message: err
-    });
-  }
-}
+  const token = await signToken(newUser._id);
 
-exports.login = async (req, res) => {
-  try {
-    const { email, userName, password } = req.body;
+  res.status(200).json({
+    status: 'success',
+    token
+  });
+});
 
-    if (!(email || userName) || !password) {
-      return res.status(400).json({
-        status: 'fail',
-        message: "Please provide email/username and your password"
-      });
-    }
+exports.login = catchAsync(async (req, res, next) => {
+  const { userName, password } = req.body;
 
-    const user = await User.findOne({
-      $or: [
-        { email: { $eq: req.body.email } },
-        { userName: { $eq: req.body.userName } }
-      ]
-    }).select('+password');
+  if (!userName || !password) return next(new AppError('Please enter an email/username and password', 400));
 
-    if (!user || !(await user.correctPassword(password, user.password))) {
-      return res.status(400).json({
-        status: 'fail',
-        message: 'Incorrect email/username or password'
-      });
-    }
+  const user = await User.findOne({
+    $or: [
+      { email: userName },
+      { userName }
+    ]
+  }).select('+password');
 
-    const token = await signToken(user._id);
+  if (!user || !(await user.correctPassword(password, user.password))) return next(new AppError('Incorrect email/username or password', 401));
 
-    res.status(200).json({
-      status: 'success',
-      token
-    });
-  } catch (err) {
-    res.status(200).json({
-      status: 'fail',
-      message: err
-    });
-  }
-}
+  const token = await signToken(user._id);
+
+  res.status(200).json({
+    status: 'success',
+    token
+  });
+});
+
+exports.protect = catchAsync(async (req, res, next) => {
+  let token;
+  if (req.headers.authorization) token = req.headers.authorization.split(' ')[1];
+
+  if (!token) return next(new AppError('You must be logged in to get access', 401));
+
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET, () => { });
+
+  const currentUser = await User.findById(decoded.id);
+
+  if (!currentUser) return next(new AppError('The user belonging to this token no longer exists', 401));
+  if (currentUser.passwordChangedAfter(decoded.iat)) next(new AppError('Recently changed password. Please log in again', 401));
+
+  req.user = currentUser;
+
+  next();
+})
