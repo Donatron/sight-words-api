@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const catchAsync = require('../utils/catchAsync');
 const User = require('../models/userModel');
 
 const filterObj = (obj, ...allowedFields) => {
@@ -12,36 +13,24 @@ const filterObj = (obj, ...allowedFields) => {
   return newObj;
 }
 
-exports.updateMe = async (req, res) => {
-  const filteredObj = filterObj(req.body, 'name', 'userName');
-  const token = req.headers.authorization.split(' ')[1];
-  const decoded = await jwt.decode(token, process.env.JWT_SECRET);
+exports.updateMe = catchAsync(async (req, res, next) => {
+  const filteredObj = filterObj(req.body, 'name', 'userName', 'email');
 
-  try {
-    const updatedUser = await User.findByIdAndUpdate(decoded.id, filteredObj, { new: true, runValidators: true });
+  const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredObj, { new: true, runValidators: true });
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        user: updatedUser
-      },
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: 'fail',
-      message: err
-    });
-  }
-}
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user: updatedUser
+    }
+  });
+});
 
-exports.deleteMe = async (req, res) => {
-  const token = req.headers.authorization.split(' ')[1];
-  const decoded = await jwt.decode(token, process.env.JWT_SECRET);
-
-  await User.findByIdAndUpdate(decoded.id, { active: false });
+exports.deleteMe = catchAsync(async (req, res) => {
+  await User.findByIdAndUpdate(req.user.id, { active: false });
 
   res.status(204).json({
     status: 'success',
     data: null
   });
-}
+});

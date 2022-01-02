@@ -11,17 +11,17 @@ const DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSW
 mongoose.connect(DB, {
   useNewUrlParser: true,
   useUnifiedTopology: true
-}).then(() => console.log('Connected to MongoDB!'))
+}).then(() => console.log('Connected to MongoDB!'));
 
 const server = app.listen(PORT, () => {
   console.log(`App listening on port: ${PORT}`);
 });
 
 process.on('unhandledRejection', err => {
-  console.log('UNHANDLED REJECTION! Shutting down...');;
+  console.log('UNHANDLED REJECTION! Shutting down...');
   console.log(err.name, err.message);
 
   server.close(() => {
     process.exit(1);
-  })
+  });
 });

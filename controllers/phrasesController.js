@@ -1,93 +1,53 @@
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
 const Phrase = require('../models/phraseModel');
 
-exports.getAllPhrases = async (req, res) => {
-  try {
-    const phrases = await Phrase.find();
+exports.getAllPhrases = catchAsync(async (req, res, next) => {
+  const phrases = await Phrase.find({ user: req.user.id });
 
-    if (!phrases) {
-      res.status(404).json({
-        status: 'fail',
-        message: 'Something went wrong...'
-      });
+  res.status(200).json({
+    status: 'success',
+    results: phrases.length,
+    data: {
+      phrases
     }
+  });
+});
 
-    res.status(200).json({
-      status: 'success',
-      results: phrases.length,
-      data: {
-        phrases
-      }
-    });
-  } catch (err) {
-    res.status(404).json({
-      status: 'fail',
-      message: 'Something went wrong...'
-    });
-  }
-}
+exports.createPhrase = catchAsync(async (req, res, next) => {
+  const phrase = await Phrase.create({
+    phrase: req.body.phrase,
+    user: req.user.id
+  });
 
-exports.createPhrase = async (req, res) => {
-  try {
-    const phrase = await Phrase.create(req.body);
-
-    res.status(200).json({
-      status: 'success',
-      data: {
-        phrase
-      }
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: 'fail',
-      message: 'Something went wrong...'
-    });
-  }
-}
-
-exports.updatePhrase = async (req, res) => {
-  try {
-    const updatedPhrase = await Phrase.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-
-    if (!updatedPhrase) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'Unable to find a phrase with that ID'
-      });
+  res.status(200).json({
+    status: 'sucess',
+    data: {
+      phrase
     }
+  });
+});
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        phrase: updatedPhrase
-      }
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: 'fail',
-      message: 'Something went wrong...'
-    });
-  }
-}
+exports.updatePhrase = catchAsync(async (req, res, next) => {
+  const updatedPhrase = await Phrase.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
 
-exports.deletePhrase = async (req, res) => {
-  try {
-    const phrase = await Phrase.findByIdAndDelete(req.params.id);
+  if (!updatedPhrase) return next(new AppError('Unable to find a phrase with that ID', 404));
 
-    if (!phrase) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'Unable to find a phrase with that ID'
-      });
+  res.status(200).json({
+    status: 'success',
+    data: {
+      phrase: updatedPhrase
     }
+  });
+});
 
-    res.status(204).json({
-      status: 'success',
-      data: null
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: 'fail',
-      message: 'Something went wrong'
-    });
-  }
-}
+exports.deletePhrase = catchAsync(async (req, res, next) => {
+  const deletedPhrase = await Phrase.findByIdAndDelete(req.params.id);
+
+  if (!deletedPhrase) return next(new AppError('Unable to locate a phrase with that ID', 404));
+
+  res.status(204).json({
+    status: 'success',
+    data: null
+  });
+});
