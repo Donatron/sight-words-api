@@ -3,6 +3,7 @@ const { promisify } = require('util');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const User = require('../models/userModel');
+const { sendEmail } = require('../utils/email');
 
 const signToken = (id) => {
   return jwt.sign(
@@ -48,7 +49,29 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordConfirm
   });
 
-  createSendToken(newUser._id, 201, res);
+  const token = signToken(newUser._id);
+  const emailConfirmUrl = `${req.protocol}://${req.get('host')}/users/emailConfirm/${token}`;
+
+  const mailOptions = {
+    email,
+    subject: 'Sight Words - Please Confirm Your Email',
+    message: `Thank you for registering for Sight Words.\nPlease click the link below to confirm your email.\nIf you did not register, please disregard this email.\n\n${emailConfirmUrl}`
+  }
+
+  await sendEmail(mailOptions);
+
+  res.status(200).json({
+    status: 'success',
+    message: 'A confirmation email has been sent to your registered email address. Please click on the link and confirm your email to begin using Sight Words'
+  });
+});
+
+exports.confirmEmail = catchAsync(async (req, res, next) => {
+  const decoded = await promisify(jwt.verify)(req.params.token, process.env.JWT_SECRET, () => { });
+
+  const user = await User.findByIdAndUpdate(decoded.id, { emailConfirmed: true }, { new: true, runValidators: true });
+
+  createSendToken(user, 200, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -64,6 +87,8 @@ exports.login = catchAsync(async (req, res, next) => {
   }).select('+password');
 
   if (!user || !(await user.correctPassword(password, user.password))) return next(new AppError('Incorrect email/username or password', 401));
+
+  if (!user.emailConfirmed) return next(new AppError('You must confirm your email address before logging in. Please check your email', 401));
 
   createSendToken(user, 200, res);
 });
