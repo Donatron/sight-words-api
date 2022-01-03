@@ -50,12 +50,12 @@ exports.signup = catchAsync(async (req, res, next) => {
   });
 
   const token = signToken(newUser._id);
-  const emailConfirmUrl = `${req.protocol}://${req.get('host')}/users/emailConfirm/${token}`;
+  const confirmUrl = `${req.protocol}://${req.get('host')}/users/emailConfirm/${token}`;
 
   const mailOptions = {
     email,
     subject: 'Sight Words - Please Confirm Your Email',
-    message: `Thank you for registering for Sight Words.\nPlease click the link below to confirm your email.\nIf you did not register, please disregard this email.\n\n${emailConfirmUrl}`
+    message: `Thank you for registering for Sight Words.\nPlease click the link below to confirm your email.\nIf you did not register, please disregard this email.\n\n${confirmUrl}`
   }
 
   await sendEmail(mailOptions);
