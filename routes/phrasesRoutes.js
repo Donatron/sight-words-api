@@ -4,24 +4,14 @@ const phrasesController = require('../controllers/phrasesController');
 
 const router = express.Router();
 
+router.use(authController.protect);
+
 router.route('/')
-  .get(
-    authController.protect,
-    phrasesController.getAllPhrases
-  )
-  .post(
-    authController.protect,
-    phrasesController.createPhrase
-  );
+  .get(phrasesController.getAllPhrases)
+  .post(phrasesController.createPhrase);
 
 router.route('/:id')
-  .patch(
-    authController.protect,
-    phrasesController.updatePhrase
-  )
-  .delete(
-    authController.protect,
-    phrasesController.deletePhrase
-  );
+  .patch(phrasesController.updatePhrase)
+  .delete(phrasesController.deletePhrase);
 
 module.exports = router;

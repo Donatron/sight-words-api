@@ -4,24 +4,14 @@ const sightWordsController = require('../controllers/sightWordsController');
 
 const router = express.Router();
 
+router.use(authController.protect);
+
 router.route('/')
-  .get(
-    authController.protect,
-    sightWordsController.getAllSightWords
-  )
-  .post(
-    authController.protect,
-    sightWordsController.createSightWord
-  );
+  .get(sightWordsController.getAllSightWords)
+  .post(sightWordsController.createSightWord);
 
 router.route('/:id')
-  .patch(
-    authController.protect,
-    sightWordsController.updateSightWord
-  )
-  .delete(
-    authController.protect,
-    sightWordsController.deleteSightWord
-  );
+  .patch(sightWordsController.updateSightWord)
+  .delete(sightWordsController.deleteSightWord);
 
 module.exports = router;

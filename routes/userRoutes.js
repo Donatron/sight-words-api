@@ -7,17 +7,13 @@ const router = express.Router();
 router.post('/signup', authController.signup);
 router.patch('/emailConfirm/:token', authController.confirmEmail);
 router.post('/login', authController.login);
+router.post('/forgotPassword', authController.forgotPassword);
+router.patch('/resetPassword/:token', authController.resetPassword);
 
-router.route('/updateMe')
-  .patch(
-    authController.protect,
-    userController.updateMe
-  );
+router.use(authController.protect);
 
-router.route('/deleteMe')
-  .delete(
-    authController.protect,
-    userController.deleteMe
-  );
+router.route('/updateMyPassword').patch(authController.updatePassword);
+router.route('/updateMe').patch(userController.updateMe);
+router.route('/deleteMe').delete(userController.deleteMe);
 
 module.exports = router;
