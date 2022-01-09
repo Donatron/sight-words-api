@@ -27,7 +27,7 @@ app.use(cors());
 
 const limiter = rateLimit({
   windowMS: 60 * 60 * 1000, // 1 hour
-  max: 250,
+  max: 100,
   message: 'Too many requests from this IP address. Please try again in 1 hour'
 });
 
