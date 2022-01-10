@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
@@ -6,8 +7,11 @@ const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const pug = require('pug');
 
 const app = express();
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');

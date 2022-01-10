@@ -4,7 +4,7 @@ const { promisify } = require('util');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const User = require('../models/userModel');
-const { sendEmail } = require('../utils/email');
+const Email = require('../utils/email');
 
 const signToken = (id) => {
   return jwt.sign(
@@ -51,15 +51,9 @@ exports.signup = catchAsync(async (req, res, next) => {
   });
 
   const token = signToken(newUser._id);
-  const confirmUrl = `${req.protocol}://${req.get('host')}/users/emailConfirm/${token}`;
+  const confirmURL = `${req.protocol}://${req.get('host')}/users/emailConfirm/${token}`;
 
-  const mailOptions = {
-    email,
-    subject: 'Sight Words - Please Confirm Your Email',
-    message: `Thank you for registering for Sight Words.\nPlease click the link below to confirm your email.\nIf you did not register, please disregard this email.\n\n${confirmUrl}`
-  }
-
-  await sendEmail(mailOptions);
+  await new Email(newUser, confirmURL).sendConfirmEmail();
 
   res.status(200).json({
     status: 'success',
@@ -71,6 +65,10 @@ exports.confirmEmail = catchAsync(async (req, res, next) => {
   const decoded = await promisify(jwt.verify)(req.params.token, process.env.JWT_SECRET, () => { });
 
   const user = await User.findByIdAndUpdate(decoded.id, { emailConfirmed: true }, { new: true, runValidators: true });
+
+  const siteURL = `${req.protocol}://${req.get('host')}/users/login`;
+
+  await new Email(user, siteURL).sendWelcome();
 
   createSendToken(user, 200, res);
 });
@@ -113,14 +111,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   const resetURL = `${req.protocol}://${req.get('host')}/users/resetPassword/${resetToken}`;
 
-  const message = `Forgot your passsword? Enter a new password and password confirmation at this URL \n ${resetURL}`;
-
   try {
-    await sendEmail({
-      email: user.email,
-      subject: 'Sight Words - Your Password Reset Token (valid for 10 minutes)',
-      message
-    });
+    await new Email(user, resetURL).sendForgotPassword();
 
     res.status(200).json({
       status: 'success',

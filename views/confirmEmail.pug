@@ -1,0 +1,9 @@
+extends baseEmail
+
+block content 
+  h1 Please Confirm Your Email Address
+  p Hi #{firstName},
+  p and thank you for joining Sight Words.
+  p Before you begin, please click the button below to confirm you email address 
+  buttun.btn
+    a(href=`${url}`) Confirm Email 
