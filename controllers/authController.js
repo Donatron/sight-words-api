@@ -89,6 +89,8 @@ exports.login = catchAsync(async (req, res, next) => {
 
   if (!user.emailConfirmed) return next(new AppError('You must confirm your email address before logging in. Please check your email', 401));
 
+  await new Email(user, 'http://someurl.com').sendMailJet();
+
   createSendToken(user, 200, res);
 });
 
@@ -129,6 +131,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 });
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
+  // TODO - SEE WHY PASSWORDCHANGEDAT IS NOT UPDATING
+
   const hashedToken = await crypto.createHash('sha256').update(req.params.token).digest('hex');
 
   const user = await User.findOne({

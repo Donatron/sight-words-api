@@ -1,6 +1,9 @@
 const nodemailer = require('nodemailer');
+const mailjet = require('node-mailjet')
 const pug = require('pug');
 const htmlToText = require('html-to-text');
+
+mailjet.connect(process.env.MJ_APIKEY_PUBLIC, process.env.MJ_APIKEY_PRIVATE);
 
 module.exports = class Email {
   constructor(user, url,) {
@@ -18,7 +21,43 @@ module.exports = class Email {
         user: process.env.EMAIL_USERNAME,
         pass: process.env.EMAIL_PASSWORD
       }
-    })
+    });
+  }
+
+  mailJetConnection() {
+    return mailjet.connect(process.env.MJ_APIKEY_PUBLIC, process.env.MJ_APIKEY_PRIVATE);
+  }
+
+  async sendMailJet() {
+    const request = this.mailJetConnection()
+      .post("send", { 'version': 'v3.1' })
+      .request({
+        "Messages": [
+          {
+            "From": {
+              "Email": `${process.env.EMAIL_FROM}`,
+              "Name": "Sight Words"
+            },
+            "To": [
+              {
+                "Email": `${this.to}`,
+                "Name": `${this.firstName}`
+              }
+            ],
+            "Subject": "Greetings from Mailjet.",
+            "TextPart": "My first Mailjet email",
+            "HTMLPart": "<h3>Dear passenger 1, welcome to <a href='https://www.mailjet.com/'>Mailjet</a>!</h3><br />May the delivery force be with you!",
+            "CustomID": "AppGettingStartedTest"
+          }
+        ]
+      })
+    request
+      .then((result) => {
+        console.log(result.body)
+      })
+      .catch((err) => {
+        console.log(err.statusCode)
+      })
   }
 
   async send(template, subject) {
@@ -28,6 +67,31 @@ module.exports = class Email {
       subject
     });
 
+    if (process.env.NODE_ENV === 'production') {
+      return await this.mailJetConnection()
+        .post("send", { 'version': 'v3.1' })
+        .request({
+          "Messages": [
+            {
+              "From": {
+                "Email": `${process.env.EMAIL_FROM}`,
+                "Name": "Sight Words"
+              },
+              "To": [
+                {
+                  "Email": `${this.to}`,
+                  "Name": `${this.firstName}`
+                }
+              ],
+              "Subject": subject,
+              "TextPart": htmlToText.fromString(html),
+              "HTMLPart": html
+            }
+          ]
+        });
+    }
+
+    // Development emails only
     const mailOptions = {
       from: this.from,
       to: this.to,
