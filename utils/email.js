@@ -8,6 +8,7 @@ mailjet.connect(process.env.MJ_APIKEY_PUBLIC, process.env.MJ_APIKEY_PRIVATE);
 module.exports = class Email {
   constructor(user, url,) {
     this.to = user.email;
+    this.name = user.name;
     this.firstName = user.name.split(' ')[0];
     this.url = url;
     this.from = `Sight Words <${process.env.EMAIL_FROM}>`
@@ -26,38 +27,6 @@ module.exports = class Email {
 
   mailJetConnection() {
     return mailjet.connect(process.env.MJ_APIKEY_PUBLIC, process.env.MJ_APIKEY_PRIVATE);
-  }
-
-  async sendMailJet() {
-    const request = this.mailJetConnection()
-      .post("send", { 'version': 'v3.1' })
-      .request({
-        "Messages": [
-          {
-            "From": {
-              "Email": `${process.env.EMAIL_FROM}`,
-              "Name": "Sight Words"
-            },
-            "To": [
-              {
-                "Email": `${this.to}`,
-                "Name": `${this.firstName}`
-              }
-            ],
-            "Subject": "Greetings from Mailjet.",
-            "TextPart": "My first Mailjet email",
-            "HTMLPart": "<h3>Dear passenger 1, welcome to <a href='https://www.mailjet.com/'>Mailjet</a>!</h3><br />May the delivery force be with you!",
-            "CustomID": "AppGettingStartedTest"
-          }
-        ]
-      })
-    request
-      .then((result) => {
-        console.log(result.body)
-      })
-      .catch((err) => {
-        console.log(err.statusCode)
-      })
   }
 
   async send(template, subject) {
@@ -80,7 +49,7 @@ module.exports = class Email {
               "To": [
                 {
                   "Email": `${this.to}`,
-                  "Name": `${this.firstName}`
+                  "Name": `${this.name}`
                 }
               ],
               "Subject": subject,
