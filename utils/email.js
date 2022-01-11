@@ -3,10 +3,8 @@ const mailjet = require('node-mailjet')
 const pug = require('pug');
 const htmlToText = require('html-to-text');
 
-mailjet.connect(process.env.MJ_APIKEY_PUBLIC, process.env.MJ_APIKEY_PRIVATE);
-
 module.exports = class Email {
-  constructor(user, url,) {
+  constructor(user, url) {
     this.to = user.email;
     this.name = user.name;
     this.firstName = user.name.split(' ')[0];
