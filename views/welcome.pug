@@ -1,0 +1,11 @@
+extends baseEmail
+
+block content 
+  h1 Welcome to Sight Words
+  p Hi #{firstName},
+  p Now that you've confirmed your email address you're ready to begin using Sight Words.
+  p If you haven't logged in already, click the link below and start adding to your word list.
+  p As well as simple words, you're also able to add phrases to practice reading your words joined togther.
+  p Thanks for joining Sight Words, and we hope you enjoy the site. 
+  buttun.btn
+    a(href=`${url}`) Log In 
