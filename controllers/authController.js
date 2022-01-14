@@ -51,7 +51,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   });
 
   const token = signToken(newUser._id);
-  const confirmURL = `${req.protocol}://${req.get('host')}/users/emailConfirm/${token}`;
+  const confirmURL = `${process.env.CLIENT_URL}/confirm-email/${token}`;
 
   await new Email(newUser, confirmURL).sendConfirmEmail();
 
@@ -66,7 +66,7 @@ exports.confirmEmail = catchAsync(async (req, res, next) => {
 
   const user = await User.findByIdAndUpdate(decoded.id, { emailConfirmed: true }, { new: true, runValidators: true });
 
-  const siteURL = `${req.protocol}://${req.get('host')}/users/login`;
+  const siteURL = `${process.env.CLIENT_URL}/login`;
 
   await new Email(user, siteURL).sendWelcome();
 
@@ -109,7 +109,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   const resetToken = await user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
 
-  const resetURL = `${req.protocol}://${req.get('host')}/users/resetPassword/${resetToken}`;
+  const resetURL = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
   try {
     await new Email(user, resetURL).sendForgotPassword();
