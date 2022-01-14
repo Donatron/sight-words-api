@@ -7,7 +7,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
 const xss = require('xss-clean');
 const hpp = require('hpp');
-const pug = require('pug');
+const compression = require('compression');
 
 const app = express();
 app.set('view engine', 'pug');
@@ -43,6 +43,8 @@ app.use(hpp());
 app.use('/sight-words', sightWordsRouter);
 app.use('/phrases', phrasesRouter);
 app.use('/users', userRouter);
+
+app.use(compression();
 
 app.all('/*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`));
