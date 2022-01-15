@@ -40,24 +40,37 @@ const createSendToken = (user, statusCode, res) => {
 }
 
 exports.signup = catchAsync(async (req, res, next) => {
-  const { name, userName, email, password, passwordConfirm } = req.body;
+  const { name, userName, email, password, passwordConfirm, receiveEmails, emailConfirmed } = req.body;
 
   const newUser = await User.create({
     name,
     userName,
     email,
     password,
-    passwordConfirm
+    passwordConfirm,
+    receiveEmails,
+    emailConfirmed
   });
 
   const token = signToken(newUser._id);
-  const confirmURL = `${process.env.CLIENT_URL}/confirm-email/${token}`;
 
-  await new Email(newUser, confirmURL).sendConfirmEmail();
+  if (receiveEmails) {
+    const confirmURL = `${process.env.CLIENT_URL}/confirm-email/${token}`;
+
+    await new Email(newUser, confirmURL).sendConfirmEmail();
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'A confirmation email has been sent to your registered email address. Please click on the link and confirm your email to begin using Sight Words'
+    });
+  }
 
   res.status(200).json({
     status: 'success',
-    message: 'A confirmation email has been sent to your registered email address. Please click on the link and confirm your email to begin using Sight Words'
+    token,
+    data: {
+      user: newUser
+    }
   });
 });
 

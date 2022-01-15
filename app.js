@@ -44,7 +44,7 @@ app.use('/sight-words', sightWordsRouter);
 app.use('/phrases', phrasesRouter);
 app.use('/users', userRouter);
 
-app.use(compression();
+app.use(compression());
 
 app.all('/*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`));
